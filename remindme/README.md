@@ -1,6 +1,6 @@
 # remindme
 
-Set up verbal reminders on your machine (macOS or linux) using Text-To-Speech
+Set periodic verbal reminders on your machine (macOS or linux) using Text-To-Speech
 
 ## Example
 
@@ -37,7 +37,7 @@ remindme -h
 
 ## Setup
 (substitute paths are required by your machine)
-1. Download `remindme.sh` and move it somewhere it'll be safe (e.g.,
+1. Download `remindme.sh` and move it somewhere it'll be safe (e.g.,)
     
     ```sh
     mv ~/Downloads/remindme.sh ~/scripts/
