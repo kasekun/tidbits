@@ -4,9 +4,10 @@ brew install pyenv
 pyenv install 3.11.2
 pyenv global 3.11.2
 ```
-### Initialize Pyenv for the current shell session (follow instructions for ~/.zshrc)
+### Initialize Pyenv for the current shell
 ```bash
 pyenv --init
+# follow instructions for whatever your shell is
 source ~/.zshrc
 ```
 ### Verify that we're using Pyenv
