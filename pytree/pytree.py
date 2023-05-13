@@ -16,11 +16,18 @@ def get_imports(path):
                 yield node.module + "." + alias.name
 
 
-def get_local_modules(path):
-    return {name.stem for name in path.iterdir() if name.suffix == ".py"}
+def get_local_modules(root_path):
+    local_modules = set()
+
+    for path in root_path.rglob('*.py'):
+        module_path = path.relative_to(root_path).with_suffix('')
+        module_name = '.'.join(module_path.parts)
+        local_modules.add(module_name)
+
+    return local_modules
 
 
-def build_dependency_tree(path, seen=None, current_branch=None, circular_deps=None):
+def build_dependency_tree(path, root_path, seen=None, current_branch=None, circular_deps=None):
     path = Path(path)
     if seen is None:
         seen = {path.stem: {}}
@@ -29,7 +36,7 @@ def build_dependency_tree(path, seen=None, current_branch=None, circular_deps=No
     if circular_deps is None:
         circular_deps = set()
 
-    local_modules = list(get_local_modules(path.parent))
+    local_modules = get_local_modules(root_path)
     imports = list(dict.fromkeys(get_imports(path)))
 
     for i, module in enumerate(imports):
@@ -52,6 +59,7 @@ def build_dependency_tree(path, seen=None, current_branch=None, circular_deps=No
             seen[path.stem][module] = {}
             build_dependency_tree(
                 path.parent / (module + ".py"),
+                root_path,
                 seen[path.stem],
                 current_branch,
                 circular_deps,
@@ -59,6 +67,7 @@ def build_dependency_tree(path, seen=None, current_branch=None, circular_deps=No
             current_branch.remove(module)
 
     return seen
+
 
 
 def print_dependency_tree(tree, indent="", is_root=True):
@@ -84,7 +93,8 @@ def main():
 
     args = parser.parse_args()
 
-    dependency_tree = build_dependency_tree(args.file)
+    root_path = Path(args.file).parent
+    dependency_tree = build_dependency_tree(args.file, root_path)
 
     print_dependency_tree(dependency_tree)
 
