@@ -4,9 +4,30 @@ function is_git_repo {
   git rev-parse --is-inside-work-tree > /dev/null 2>&1
 }
 
+function confirm {
+  if [ -z "$1" ]
+  then
+    echo "No branches will be affected. Exiting..."
+    exit 0
+  else
+    echo "The following branches will be affected:"
+    echo $1
+    read -p "Are you sure you want to continue? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+      exit 1
+    else
+      echo "Aborting"
+    fi
+  fi
+}
+
 function purge_gone_branches {
   if is_git_repo; then
-    git fetch --all -p; git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }' | xargs -n 1 git branch -D
+    branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }')
+    confirm "$branches"
+    echo $branches | xargs -n 1 git branch -D
   else
     echo "Not a git repository. Skipping..."
   fi
@@ -14,7 +35,9 @@ function purge_gone_branches {
 
 function purge_merged_branches {
   if is_git_repo; then
-    git branch --merged | grep -Ev "(\*|master|develop|staging)" | xargs -n 1 git branch -d
+    branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging)")
+    confirm "$branches"
+    echo $branches | xargs -n 1 git branch -d
   else
     echo "Not a git repository. Skipping..."
   fi
