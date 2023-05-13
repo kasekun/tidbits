@@ -16,12 +16,12 @@ function confirm {
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
-      exit 1
-    else
       echo "Aborting"
+      exit 1
     fi
   fi
 }
+
 
 function purge_gone_branches {
   if is_git_repo; then
