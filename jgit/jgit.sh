@@ -35,7 +35,20 @@ function update_from_master {
       git checkout master
       git fetch && git merge
       git checkout "${current_branch}"
-      git merge master
+      
+      # check if there will be merge conflicts
+      set +e
+      git merge --no-commit --no-ff master
+      STATUS=$?
+      set -e
+      git merge --abort
+  
+      # if the merge is clean, proceed; otherwise, print a warning
+      if [[ $STATUS -eq 0 ]]; then
+        git merge master
+      else
+        echo "Warning: A merge with master would result in conflicts. Please resolve them before merging."
+      fi
     fi
   else
     echo "Not a git repository. Skipping..."
