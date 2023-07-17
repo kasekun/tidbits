@@ -61,6 +61,7 @@ function update_from_master {
 
 function purge_gone_branches {
   if is_git_repo; then
+    git fetch origin
     branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }')
     confirm "$branches"
     echo $branches | xargs -n 1 git branch -D
@@ -71,6 +72,7 @@ function purge_gone_branches {
 
 function purge_merged_branches {
   if is_git_repo; then
+    git fetch origin
     branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging)")
     confirm "$branches"
     echo $branches | xargs -n 1 git branch -d
@@ -89,6 +91,7 @@ function list_changed_files {
 
 function track_all_branches {
   if is_git_repo; then
+    git fetch origin
     for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done && git fetch --all
   else
     echo "Not a git repository. Skipping..."
