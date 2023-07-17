@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function is_git_repo {
   git rev-parse --is-inside-work-tree > /dev/null 2>&1
 }
@@ -19,6 +21,24 @@ function confirm {
       echo "Aborting"
       exit 1
     fi
+  fi
+}
+
+
+function update_from_master {
+  if is_git_repo; then
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "$current_branch" == "master" ]]; then
+      echo "On master branch already, fetching and merging"
+      git fetch && git merge
+    else
+      git checkout master
+      git fetch && git merge
+      git checkout "${current_branch}"
+      git merge master
+    fi
+  else
+    echo "Not a git repository. Skipping..."
   fi
 }
 
@@ -67,11 +87,12 @@ Usage: jgit <command>
 
 Available commands:
 
-  -p, --purge-gone     - Remove local branches tracking remote branches that are gone
-  -m, --purge-merged   - Remove local branches that have been merged
-  -f, --files-changed  - List files changed from origin/master
-  -t, --track-all      - Track all remote branches locally
-  -h, --help           - Show this help and exit
+  -p, --purge-gone          - Remove local branches tracking remote branches that are gone
+  -m, --purge-merged        - Remove local branches that have been merged
+  -f, --files-changed       - List files changed from origin/master
+  -t, --track-all           - Track all remote branches locally
+  -u, --update-from-master  - Update the current branch with remote master
+  -h, --help                - Show this help and exit
 
 EOF
     exit 0
@@ -89,6 +110,9 @@ case "$1" in
     ;;
   -t|--track-all)
     track_all_branches
+    ;;
+  -u|--update-from-master)
+    update_from_master
     ;;
   -h|--help)
     usage
