@@ -36,14 +36,17 @@ function update_from_master {
       git fetch && git merge
       git checkout "${current_branch}"
       
-      # check if there will be merge conflicts
+      # dry merge to check for conflicts
       set +e
       git merge --no-commit --no-ff master
       STATUS=$?
       set -e
-      git merge --abort
+      # abort dry merge (if exists)
+      if [[ -f .git/MERGE_HEAD ]]; then
+        git merge --abort
+      fi
   
-      # if the merge is clean, proceed; otherwise, print a warning
+      # if the merge is clean, proceed; otherwise, warn user
       if [[ $STATUS -eq 0 ]]; then
         git merge master
       else
