@@ -41,11 +41,8 @@ function update_from_master {
       git merge --no-commit --no-ff master
       STATUS=$?
       set -e
-      # abort dry merge (if exists)
-      if [[ -f .git/MERGE_HEAD ]]; then
-        git merge --abort
-      fi
-  
+      git merge --abort 2>/dev/null
+
       # if the merge is clean, proceed; otherwise, warn user
       if [[ $STATUS -eq 0 ]]; then
         git merge master
