@@ -10,6 +10,7 @@ Run `jgit` with one of the following commands:
 - `-m` or `--purge-merged`: Remove local branches that have been merged.
 - `-f` or `--files-changed`: List files changed from `origin/master`.
 - `-t` or `--track-all`: Track all remote branches locally.
+- `-u` or `--update-from-master`: Update master and the current branch with remote master.
 - `-h` or `--help`: Show help information and exit.
 
 ## Installation
