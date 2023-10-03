@@ -24,75 +24,53 @@ function confirm {
   fi
 }
 
-
 function update_from_master {
-  if is_git_repo; then
-    current_branch=$(git rev-parse --abbrev-ref HEAD)
-    if [[ "$current_branch" == "master" ]]; then
-      echo "On master branch already, fetching and merging"
-      git fetch && git merge
-    else
-      git checkout master
-      git fetch && git merge
-      git checkout "${current_branch}"
-      
-      # dry merge to check for conflicts
-      set +e
-      git merge --no-commit --no-ff master
-      STATUS=$?
-      set -e
-      git merge --abort 2>/dev/null
-
-      # if the merge is clean, proceed; otherwise, warn user
-      if [[ $STATUS -eq 0 ]]; then
-        git merge master
-      else
-        echo "Warning: A merge with master would result in conflicts. Please resolve them before merging."
-      fi
-    fi
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  if [[ "$current_branch" == "master" ]]; then
+    echo "On master branch already, fetching and merging"
+    git fetch && git merge
   else
-    echo "Not a git repository. Skipping..."
+    git checkout master
+    git fetch && git merge
+    git checkout "${current_branch}"
+    
+    # dry merge to check for conflicts
+    set +e
+    git merge --no-commit --no-ff master
+    STATUS=$?
+    set -e
+    git merge --abort 2>/dev/null
+
+    # if the merge is clean, proceed; otherwise, warn user
+    if [[ $STATUS -eq 0 ]]; then
+      git merge master
+    else
+      echo "Warning: A merge with master would result in conflicts. Please resolve them before merging."
+    fi
   fi
 }
 
-
 function purge_gone_branches {
-  if is_git_repo; then
-    git fetch origin
-    branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }')
-    confirm "$branches"
-    echo $branches | xargs -n 1 git branch -D
-  else
-    echo "Not a git repository. Skipping..."
-  fi
+  git fetch origin
+  branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }')
+  confirm "$branches"
+  echo $branches | xargs -n 1 git branch -D
 }
 
 function purge_merged_branches {
-  if is_git_repo; then
-    git fetch origin
-    branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging)")
-    confirm "$branches"
-    echo $branches | xargs -n 1 git branch -d
-  else
-    echo "Not a git repository. Skipping..."
-  fi
+  git fetch origin
+  branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging)")
+  confirm "$branches"
+  echo $branches | xargs -n 1 git branch -d
 }
 
 function list_changed_files {
-  if is_git_repo; then
-    git diff origin/master --name-only | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
-  else
-    echo "Not a git repository. Skipping..."
-  fi
+  git diff origin/master --name-only | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
 }
 
 function track_all_branches {
-  if is_git_repo; then
-    git fetch origin
-    for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done && git fetch --all
-  else
-    echo "Not a git repository. Skipping..."
-  fi
+  git fetch origin
+  for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done && git fetch --all
 }
 
 function usage {
@@ -114,6 +92,16 @@ EOF
     exit 0
 }
 
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    usage
+    exit 0
+fi
+
+if ! is_git_repo; then
+  echo "Not a git repository. Exiting..."
+  exit 1
+fi
+
 case "$1" in
   -p|--purge-gone)
     purge_gone_branches
@@ -129,9 +117,6 @@ case "$1" in
     ;;
   -u|--update-from-master)
     update_from_master
-    ;;
-  -h|--help)
-    usage
     ;;
   *)
     echo "Invalid option: $1"
