@@ -156,7 +156,9 @@ case "$1" in
     shift
     set_default_parent_branch "$1"
     ;;
-
+  --get-default-parent)
+    get_default_parent_branch
+    ;;
   *)
     echo "Invalid option: $1"
     usage
