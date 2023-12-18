@@ -104,7 +104,9 @@ Available commands:
   -t, --track-all           - Track all remote branches locally
   -u, --update-from-parent  - Update the current branch with remote parent branch (defaults to "master" if not set via `--set-default-parent`)
   -h, --help                - Show this help and exit
+
   --set-default-parent      - Set the default parent branch for comparisons (-t) and updates (-u)
+  --get-default-parent      - Print the default parent branch for comparisons (-t) and updates (-u)
 
 EOF
     exit 0
