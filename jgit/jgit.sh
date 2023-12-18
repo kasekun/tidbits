@@ -24,48 +24,49 @@ function confirm {
   fi
 }
 
-function update_from_master {
+function update_from_parent_branch {
+  parent_branch=${1:-master}  # Default to 'master' if no parent branch is specified
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  if [[ "$current_branch" == "master" ]]; then
-    echo "On master branch already, fetching and merging"
+
+  if [[ "$current_branch" == "$parent_branch" ]]; then
+    echo "On $parent_branch branch already, fetching and merging"
     git fetch && git merge
   else
-    git checkout master
+    git checkout "$parent_branch"
     git fetch && git merge
     git checkout "${current_branch}"
     
-    # dry merge to check for conflicts
     set +e
-    git merge --no-commit --no-ff master
+    git merge --no-commit --no-ff "$parent_branch"
     STATUS=$?
     set -e
     git merge --abort 2>/dev/null
 
-    # if the merge is clean, proceed; otherwise, warn user
     if [[ $STATUS -eq 0 ]]; then
-      git merge master
+      git merge "$parent_branch"
     else
-      echo "Warning: A merge with master would result in conflicts. Please resolve them before merging."
+      echo "Warning: A merge with $parent_branch would result in conflicts. Please resolve them before merging."
     fi
   fi
 }
 
 function purge_gone_branches {
   git fetch origin
-  branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging)' | awk '{ print $1 }')
+  branches=$(git branch -vv | grep ': gone]' | grep -Ev '(\*|master|develop|staging|green)' | awk '{ print $1 }')
   confirm "$branches"
   echo $branches | xargs -n 1 git branch -D
 }
 
 function purge_merged_branches {
   git fetch origin
-  branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging)")
+  branches=$(git branch --merged | grep -Ev "(\*|master|develop|staging|green)")
   confirm "$branches"
   echo $branches | xargs -n 1 git branch -d
 }
 
 function list_changed_files {
-  git diff origin/master --name-only | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
+  parent_branch=${1:-master}  # Default to 'master' if no parent branch is specified
+  git diff "origin/${parent_branch}" --name-only | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
 }
 
 function track_all_branches {
@@ -85,7 +86,7 @@ Available commands:
   -m, --purge-merged        - Remove local branches that have been merged
   -f, --files-changed       - List files changed from origin/master
   -t, --track-all           - Track all remote branches locally
-  -u, --update-from-master  - Update the current branch with remote master
+  -u, --update-from-parent  - Update the current branch with remote parent branch (defaults to "master")
   -h, --help                - Show this help and exit
 
 EOF
@@ -110,13 +111,29 @@ case "$1" in
     purge_merged_branches
     ;;
   -f|--files-changed)
-    list_changed_files
+    shift  # Remove the '-f' or '--files-changed' argument
+    parent_branch=""
+    while getopts ":p:" opt; do
+      case $opt in
+        p) parent_branch="$OPTARG" ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+      esac
+    done
+    list_changed_files "$parent_branch"
     ;;
   -t|--track-all)
     track_all_branches
     ;;
-  -u|--update-from-master)
-    update_from_master
+  -u|--update-from-parent)
+    shift  # Remove the '-u' or '--update-from-parent' argument
+    parent_branch=""
+    while getopts ":p:" opt; do
+      case $opt in
+        p) parent_branch="$OPTARG" ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+      esac
+    done
+    update_from_parent_branch "$parent_branch"
     ;;
   *)
     echo "Invalid option: $1"
