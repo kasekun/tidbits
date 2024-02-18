@@ -38,6 +38,8 @@ Make sure that your script is executable
 
 `chmod +x ~/scripts/jtm-launchers/your-launcher.sh`
 
+create this tmux session by running `jtm` and selecting `your-launcher.sh` from the list
+
 ## Usage
 
 Run `jtm` with one of the following commands:
