@@ -4,6 +4,23 @@ jtm is a simple bash script that helps manage tmux instances by allowing you to 
 tmux session setup script that can be executed with jtm. 
 jtm will help you handle cases where the session already exists, too.
 
+## Installation
+
+1. Clone the parent repository
+```bash
+git clone https://github.com/kasekun/tidbits.git
+```
+
+2. Navigate to the `jtm` directory
+```bash
+cd tidbits/jtm
+```
+
+3. Create a symbolic link to the script in `/usr/local/bin`
+```bash
+sudo ln -s $(pwd)/jtm.sh /usr/local/bin/jtm
+```
+
 ## Getting started
 
 Create a folder for these `jtm` launch scripts
@@ -50,26 +67,11 @@ Run `jtm` with one of the following commands:
 
 ### to do
 
- [ ] add a `--new-script` flag
- [ ] allow configuration of default path
- [ ] remove the need to have scripts end in `.sh`
+ - [ ] add a `--new-script` flag 
+ - [ ] allow configuration of default path 
+ - [ ] remove the need to have scripts end in `.sh`
 
-## Installation
 
-1. Clone the parent repository
-```bash
-git clone https://github.com/kasekun/tidbits.git
-```
-
-2. Navigate to the `jtm` directory
-```bash
-cd tidbits/jtm
-```
-
-3. Create a symbolic link to the script in `/usr/local/bin`
-```bash
-sudo ln -s $(pwd)/jtm.sh /usr/local/bin/jtm
-```
 
 Now, you should be able to run the `jtm` command from anywhere
 
