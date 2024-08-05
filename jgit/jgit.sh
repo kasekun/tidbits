@@ -82,7 +82,7 @@ function purge_merged_branches {
 function list_changed_files {
   default_branch=$(get_default_parent_branch)
   parent_branch=${1:-$default_branch}  # Use the default from Git config or 'master'
-  git diff "origin/${parent_branch}" --name-only | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
+  git diff "origin/${parent_branch}" --name-only --diff-filter=d | xargs -n 1 echo -e $(git rev-parse --show-toplevel)/ | sed 's/ //'
 }
 
 function track_all_branches {
