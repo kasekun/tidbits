@@ -90,6 +90,18 @@ function track_all_branches {
   for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done && git fetch --all
 }
 
+function checkout_remote_branch {
+  local branch_name=$1
+  if [ -z "$branch_name" ]; then
+    echo "Enter the branch name"
+    return 1
+  fi
+  
+  git remote set-branches --add origin "$branch_name"
+  git fetch
+  git checkout "$branch_name"
+}
+
 function usage {
     cat <<EOF
 jgit: a simple script to help manage git branches
@@ -98,15 +110,16 @@ Usage: jgit <command>
 
 Available commands:
 
-  -p, --purge-gone          - Remove local branches tracking remote branches that are gone
-  -m, --purge-merged        - Remove local branches that have been merged
-  -f, --files-changed       - List files changed from origin/master (defaults to "master" if not set via `--set-default-parent`)
-  -t, --track-all           - Track all remote branches locally
-  -u, --update-from-parent  - Update the current branch with remote parent branch (defaults to "master" if not set via `--set-default-parent`)
-  -h, --help                - Show this help and exit
+  -p, --purge-gone              - Remove local branches tracking remote branches that are gone
+  -m, --purge-merged            - Remove local branches that have been merged
+  -f, --files-changed           - List files changed from origin/master (defaults to "master" if not set via `--set-parent`)
+  -t, --track-all               - Track all remote branches locally
+  -u, --update-from-parent      - Update the current branch with remote parent branch (defaults to "master" if not set via `--set-parent`)
+  -c, --checkout-remote-branch  - Track, fetch, and checkout the specified remote branch
+  -h, --help                    - Show this help and exit
 
-  --set-default-parent      - Set the default parent branch for comparisons (-t) and updates (-u)
-  --get-default-parent      - Print the default parent branch for comparisons (-t) and updates (-u)
+  --set-parent                  - Set the default parent branch for comparisons (-t) and updates (-u)
+  --get-parent                  - Print the default parent branch for comparisons (-t) and updates (-u)
 
 EOF
     exit 0
@@ -154,11 +167,15 @@ case "$1" in
     done
     update_from_parent_branch "$parent_branch"
     ;;
-  --set-default-parent)
+  -c|--checkout-remote-branch)
+    shift
+    checkout_remote_branch "$1"
+    ;;
+  --set-parent)
     shift
     set_default_parent_branch "$1"
     ;;
-  --get-default-parent)
+  --get-parent)
     get_default_parent_branch
     ;;
   *)
