@@ -93,11 +93,24 @@ function track_all_branches {
 function checkout_remote_branch {
   local branch_name=$1
   if [ -z "$branch_name" ]; then
-    echo "Enter the branch name"
+    echo "Enter the branch you want to track."
     return 1
   fi
-  
-  git remote set-branches --add origin "$branch_name"
+
+  # check if the branch exists on remote
+  if ! git ls-remote --heads origin "$branch_name" &> /dev/null; then
+    echo "Branch '$branch_name' does not exist on remote origin."
+    return 1
+  fi
+
+  # check if the branch is already being tracked
+  if git branch -r | grep -q "origin/$branch_name"; then
+    echo "Branch '$branch_name' is already being tracked."
+  else
+    git remote set-branches --add origin "$branch_name"
+    echo "Added '$branch_name' to tracked branches."
+  fi
+
   git fetch
   git checkout "$branch_name"
 }
