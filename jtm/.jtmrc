@@ -1,0 +1,48 @@
+#!/bin/bash
+# JTM Configuration File
+
+# Custom directory for launcher scripts
+# Uncomment and modify to use a different location for your launchers
+# JTM_LAUNCHERS_DIR="$HOME/my-custom-launchers"
+
+# Default session settings
+# These will be used as defaults when creating new launchers
+DEFAULT_SESSION_PREFIX="dev-"
+DEFAULT_WINDOW_NAME="main"
+
+# Appearance settings
+SHOW_DESCRIPTIONS=true
+SHOW_TAGS=false
+
+# Behavior settings
+AUTO_ATTACH=true         # Automatically attach to sessions after creation
+CONFIRM_KILL=true        # Confirm before killing sessions
+DEFAULT_ACTION="attach"  # Default action when session exists: "attach", "kill", or "prompt"
+
+# Advanced tmux settings
+# These will be applied to new sessions
+TMUX_DEFAULT_TERMINAL="tmux-256color"
+TMUX_MOUSE_MODE=on
+TMUX_BASE_INDEX=1
+TMUX_PANE_BASE_INDEX=1
+
+# Hook functions - uncomment and customize as needed
+# These functions will be called at specific points if defined
+
+# Called before a session is created
+# pre_session_hook() {
+#   echo "Creating session: $session_name"
+#   # Add your custom logic here
+# }
+
+# Called after a session is created but before attaching
+# post_session_hook() {
+#   echo "Session created: $session_name"
+#   # Add your custom logic here
+# }
+
+# Called before attaching to a session
+# pre_attach_hook() {
+#   echo "Attaching to session: $session_name"
+#   # Add your custom logic here
+# } 
