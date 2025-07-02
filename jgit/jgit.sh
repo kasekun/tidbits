@@ -20,6 +20,18 @@ function get_default_parent_branch {
   git config --get jgit.defaultParentBranch || echo "master"
 }
 
+function checkout_default_parent_branch {
+  default_branch=$(get_default_parent_branch)
+  parent_branch=${1:-$default_branch}  # Use the default from Git config or 'master'
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+  if [[ "$current_branch" == "$parent_branch" ]]; then
+    echo "On $parent_branch branch already"
+  else
+    git checkout "$parent_branch"
+  fi
+}
+
 function confirm {
   if [ -z "$1" ]
   then
@@ -44,23 +56,26 @@ function update_from_parent_branch {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
 
   if [[ "$current_branch" == "$parent_branch" ]]; then
-    echo "On $parent_branch branch already, fetching and merging"
-    git fetch && git merge
+    echo "On $parent_branch branch already, fetching and rebasing"
+    git fetch && git rebase "origin/$parent_branch"
   else
     git checkout "$parent_branch"
-    git fetch && git merge
+    git fetch && git rebase "origin/$parent_branch"
     git checkout "${current_branch}"
     
     set +e
-    git merge --no-commit --no-ff "$parent_branch"
+    git rebase --no-commit "$parent_branch" 2>/dev/null
     STATUS=$?
     set -e
-    git merge --abort 2>/dev/null
+    
+    if [[ $STATUS -ne 0 ]]; then
+      git rebase --abort 2>/dev/null
+    fi
 
     if [[ $STATUS -eq 0 ]]; then
-      git merge "$parent_branch"
+      git rebase "$parent_branch"
     else
-      echo "Warning: A merge with $parent_branch would result in conflicts. Please resolve them before merging."
+      echo "Warning: A rebase with $parent_branch would result in conflicts. Please resolve them manually with 'git rebase $parent_branch'."
     fi
   fi
 }
@@ -149,7 +164,7 @@ if ! is_git_repo; then
 fi
 
 case "$1" in
-  -p|--purge-gone)
+  -P|--purge-gone)
     purge_gone_branches
     ;;
   -m|--purge-merged)
@@ -183,6 +198,10 @@ case "$1" in
   -c|--checkout-remote-branch)
     shift
     checkout_remote_branch "$1"
+    ;;
+  -p|--checkout-parent)
+  shift
+  checkout_default_parent_branch
     ;;
   --set-parent)
     shift
