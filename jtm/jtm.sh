@@ -20,7 +20,7 @@ function list_tmuxers {
 }
 
 function _list() {
-  find "$TMUXER_DIR" -name '*.sh' -exec basename {} \; | sort
+  find "$TMUXER_DIR" -type f -name '*.sh' -exec basename {} \; | sort
 }
 
 function _list_with_descriptions() {
